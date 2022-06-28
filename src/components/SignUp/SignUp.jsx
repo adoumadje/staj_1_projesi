@@ -1,14 +1,30 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { Card, Form, Button, Container } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
+import styles from './SignUp.module.css'
 
 const SignUp = () => {
-    const profilPhotoRef = useRef()
+    const photoInputRef = useRef()
     const userNameRef = useRef()
     const emailRef = useRef()
     const passwordRef = useRef()
     const passwordConfirmRef = useRef()
     const isletmeRef = useRef()
+
+    const [photoSrc, setPhotoSrc] = useState('https://png.pngtree.com/png-clipart/20190611/original/pngtree-business-profile-png-image_2610535.jpg')
+    
+
+    const uploadPhoto = () => {
+        const choosedFile = photoInputRef.current.files[0]
+        if(choosedFile) {
+            const reader = new FileReader()
+            reader.readAsDataURL(choosedFile)
+            reader.onload = () => {
+                setPhotoSrc(reader.result)
+            }
+        }
+    }
+    
 
   return (
     <>
@@ -22,8 +38,13 @@ const SignUp = () => {
                         <h2 className='text-center mb-4'>Sign Up</h2>
                         <Form>
                             <Form.Group className='mb-2'>
-                                <Form.Label>Profil Photo</Form.Label>
-                                <Form.Control type='file' ref={profilPhotoRef} required />
+                                <div className={styles.profilePic}>
+                                    <img src={photoSrc} alt="profile pic" />
+                                    <input type="file" id='file' onChange={uploadPhoto} ref={photoInputRef} />
+                                    <label htmlFor="file">
+                                        <i class="bi bi-camera-fill"></i> Upload
+                                    </label>
+                                </div>
                             </Form.Group>
                             <Form.Group className='mb-2'>
                                 <Form.Label>Username</Form.Label>
