@@ -7,6 +7,7 @@ import ForgotPassword from "./components/ForgotPassword";
 import Navbar from "./components/Navbar/Navbar";
 import UserDashboard from "./components/UserDashboard/UserDashboard";
 import BusinessDashboard from "./components/BusinessDashboard";
+import SearchResults from "./components/SearchResults/SearchResults";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/user-dashboard" element={<UserDashboard />} />
           <Route path="/business-dashboard" element={<BusinessDashboard />} />
+          <Route path="/" element={<SearchResults />} />
         </Routes>
       </BrowserRouter>
     </>
