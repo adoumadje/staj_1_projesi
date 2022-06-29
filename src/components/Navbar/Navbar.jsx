@@ -14,7 +14,8 @@ const Navbar = () => {
         >
             <h1 style={{
                     fontFamily: 'Clicker Script',
-                    fontWeight: '400'
+                    fontWeight: '800',
+                    color: '#fff'
                 }}
             >
                 Logo
