@@ -1,7 +1,10 @@
 import React, { useRef, useState } from 'react'
-import { Card, Form, Button, Container } from 'react-bootstrap'
+import { Card, Form, Button, Container, Alert } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import styles from './SignUp.module.css'
+import { useAuth } from '../contexts/AuthContext'
+
+
 
 const SignUp = () => {
     const photoInputRef = useRef()
@@ -9,7 +12,12 @@ const SignUp = () => {
     const emailRef = useRef()
     const passwordRef = useRef()
     const passwordConfirmRef = useRef()
-    const isletmeRef = useRef()
+    const [isBusiness, setIsBusiness] = useState(false)
+
+    const { signup } = useAuth()
+    const [error, setError] = useState()
+    const [success, setSucess] = useState()
+    const [loading, setLoading] = useState()
 
     const [photoSrc, setPhotoSrc] = useState('https://png.pngtree.com/png-clipart/20190611/original/pngtree-business-profile-png-image_2610535.jpg')
     
@@ -24,6 +32,33 @@ const SignUp = () => {
             }
         }
     }
+
+    async function handleSubmit(e) {
+        e.preventDefault()
+
+        if(passwordRef.current.value !==
+            passwordConfirmRef.current.value) {
+                return setError('passwords do not match')
+        }
+
+        try {
+            setLoading(true)
+            await signup(
+                photoInputRef.current.files[0],
+                userNameRef.current.value,
+                emailRef.current.value,
+                passwordRef.current.value,
+                isBusiness
+            )
+            setError('')
+            setSucess('Account Successfully created')
+        } catch(err) {
+            setError(err.message)
+            setSucess('')
+        }
+
+        setLoading(false)
+    }
     
 
   return (
@@ -36,7 +71,9 @@ const SignUp = () => {
                 <Card>
                     <Card.Body>
                         <h2 className='text-center mb-4'>Sign Up</h2>
-                        <Form>
+                        { error && <Alert variant='danger'>{error}</Alert>}
+                        { success && <Alert variant='success'>{success}</Alert>}
+                        <Form onSubmit={handleSubmit}>
                             <Form.Group className='mb-2'>
                                 <div className={styles.profilePic}>
                                     <img src={photoSrc} alt="profile pic" />
@@ -64,13 +101,14 @@ const SignUp = () => {
                             </Form.Group>
                             <Form.Group className='mb-2'>
                                 <Form.Check 
-                                    type='checkbox' ref={isletmeRef} required 
+                                    type='checkbox' required 
                                     label='I am a business'
                                     className='mt-3'
+                                    onChange={(e) => setIsBusiness(e.target.checked) }
                                 />
                             </Form.Group>
                             <Form.Group>
-                                <Button type='submit' className='w-100 mt-3'>Sign Up</Button>
+                                <Button disabled={loading} type='submit' className='w-100 mt-3'>Sign Up</Button>
                             </Form.Group>
                         </Form>
                     </Card.Body>
