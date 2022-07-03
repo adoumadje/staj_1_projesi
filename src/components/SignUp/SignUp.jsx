@@ -3,6 +3,7 @@ import { Card, Form, Button, Container, Alert } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import styles from './SignUp.module.css'
 import { useAuth } from '../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 
 
@@ -20,6 +21,7 @@ const SignUp = () => {
     const [loading, setLoading] = useState()
 
     const [photoSrc, setPhotoSrc] = useState('https://png.pngtree.com/png-clipart/20190611/original/pngtree-business-profile-png-image_2610535.jpg')
+    const navigate = useNavigate()
     
 
     const uploadPhoto = () => {
@@ -52,6 +54,9 @@ const SignUp = () => {
             )
             setError('')
             setSucess('Account Successfully created')
+            setTimeout(() => {
+                navigate('/login')
+            }, 3000)
         } catch(err) {
             setError(err.message)
             setSucess('')
@@ -79,7 +84,7 @@ const SignUp = () => {
                                     <img src={photoSrc} alt="profile pic" />
                                     <input type="file" id='file' onChange={uploadPhoto} ref={photoInputRef} />
                                     <label htmlFor="file">
-                                        <i class="bi bi-camera-fill"></i> Upload
+                                        <i className="bi bi-camera-fill"></i> Upload
                                     </label>
                                 </div>
                             </Form.Group>
@@ -101,7 +106,7 @@ const SignUp = () => {
                             </Form.Group>
                             <Form.Group className='mb-2'>
                                 <Form.Check 
-                                    type='checkbox' required 
+                                    type='checkbox' 
                                     label='I am a business'
                                     className='mt-3'
                                     onChange={(e) => setIsBusiness(e.target.checked) }

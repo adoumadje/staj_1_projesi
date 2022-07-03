@@ -4,7 +4,7 @@ import {
     createUserWithEmailAndPassword,
     onAuthStateChanged
 } from "firebase/auth";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { projectStorage, projectFirestore as db } from "../../firebase/config";
 
@@ -14,6 +14,8 @@ export function useAuth() {
     return useContext(AuthContext)
 }
 
+
+
 export function AuthProvider({children}) {
     const [currentUser, setCurrentUser] = useState()
     const [loading, setLoading] = useState()
@@ -22,8 +24,10 @@ export function AuthProvider({children}) {
         // store photo
         const storageRef = ref(projectStorage, photo.name)
         uploadBytes(storageRef, photo).then(async (snapshot) => {
+            const collectionRef = collection(db, 'users')
             const profilURL = await getDownloadURL(storageRef)
-            await addDoc(collection(db, 'users'), { profilURL, username, email, isBusiness })
+            const docRef = await addDoc(collectionRef, { profilURL, username, email, isBusiness })
+            await updateDoc(docRef, { Id: docRef.id })
             return createUserWithEmailAndPassword(auth, email, password)
         }).catch(err => {
             console.log(err.message);
