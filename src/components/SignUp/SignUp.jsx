@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import styles from './SignUp.module.css'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { collection, getDocs, query } from 'firebase/firestore'
+import { projectFirestore as db } from '../../firebase/config'
 
 
 
@@ -35,12 +37,27 @@ const SignUp = () => {
         }
     }
 
+    async function isTakenUsername(username) {
+        let isTaken = false
+        const q = query(collection(db, 'users'))
+        const querySnapshots = await getDocs(q)
+        querySnapshots.forEach((snapshot) => {
+            let doc = snapshot._document.data.value.mapValue.fields
+            isTaken = (doc.username.stringValue === username)
+        })
+        return isTaken
+    }
+
     async function handleSubmit(e) {
         e.preventDefault()
 
         if(passwordRef.current.value !==
             passwordConfirmRef.current.value) {
                 return setError('passwords do not match')
+        }
+
+        if(await isTakenUsername(userNameRef.current.value)) {
+            return setError('This username is taken')
         }
 
         try {

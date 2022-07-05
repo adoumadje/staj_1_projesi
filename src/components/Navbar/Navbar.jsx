@@ -1,10 +1,55 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from './Navbar.module.css'
+import { useAuth } from '../contexts/AuthContext'
+import { collection, getDocs, query, where } from 'firebase/firestore'
+import { projectFirestore as db } from '../../firebase/config'
+import { useNavigate } from 'react-router-dom'
 
 const Navbar = () => {
-    const [profilePic, setProfilePic] = useState('https://images.pexels.com/photos/3134555/pexels-photo-3134555.png?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')
+    const [profilePic, setProfilePic] = useState('https://png.pngtree.com/png-clipart/20190611/original/pngtree-business-profile-png-image_2610535.jpg')
 
     const [showMenu, setShowMenu] = useState(false)
+    const { currentUser, logout } = useAuth()
+    const [username, setUsername] = useState('Someone Famous')
+    const [email, setEmail] = useState('info@gmail.com')
+    const navigate = useNavigate()
+
+
+    async function getUsername(currentUser) {
+        let username = ''
+        const q = query(collection(db, 'users'), where('email', '==', currentUser.email))
+        const querySnapshots = await getDocs(q)
+        querySnapshots.forEach((snapshot) => {
+            let doc = snapshot._document.data.value.mapValue.fields
+            username = doc.username.stringValue
+        })
+        return username
+    }
+
+    async function getPhotoURL(currentUser) {
+        let profilURL = ''
+        const q = query(collection(db, 'users'), where('email', '==', currentUser.email))
+        const querySnapshots = await getDocs(q)
+        querySnapshots.forEach((snapshot) => {
+            let doc = snapshot._document.data.value.mapValue.fields
+            profilURL = doc.profilURL.stringValue
+        })
+        return profilURL
+    }
+
+
+    useEffect(() => {
+        const updateInfos = async () => {
+            setUsername(await getUsername(currentUser))
+            setEmail(currentUser.email)
+            setProfilePic(await getPhotoURL(currentUser))
+        }
+        if(!currentUser) {
+            navigate('/login')
+            return
+        }
+        updateInfos()
+    }, [currentUser])
 
   return (
     <div className={styles.navbar}>
@@ -30,19 +75,19 @@ const Navbar = () => {
                     <img src={profilePic} alt="Profile Pic" />
                 </div>
                 {showMenu && <div className={styles.menu}>
-                    <h3>Someone Famous<br/><span>info@gmail.com</span></h3>
+                    <h3>{username}<br/><span>{email}</span></h3>
                     <ul>
                         <li>
                             <img src="https://cdn-icons-png.flaticon.com/512/618/618631.png" alt="" />
-                            <a href="">My Profile</a>
+                            <h6>My Profile</h6>
                         </li>
                         <li>
                             <img src="https://cdn-icons-png.flaticon.com/512/1159/1159633.png" alt="" />
-                            <a href="">Edit Profile</a>
+                            <h6>Edit Profile</h6>
                         </li>
                         <li>
                             <img src="https://cdn-icons-png.flaticon.com/512/1250/1250678.png" alt="" />
-                            <a href="">Logout</a>
+                            <h6 onClick={logout}>Logout</h6>
                         </li>
                     </ul>
                 </div>}

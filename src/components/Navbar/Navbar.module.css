@@ -86,14 +86,15 @@
     opacity: 1;
 }
 
-.menu ul li a {
+.menu ul li h6 {
     display: inline-block;
     text-decoration: none;
     color: #555;
     font-weight: 500;
     transition: all 0.5s ease;
+    cursor: pointer;
 }
 
-.menu ul li:hover a {
+.menu ul li:hover h6 {
     color: #007bff;
 }

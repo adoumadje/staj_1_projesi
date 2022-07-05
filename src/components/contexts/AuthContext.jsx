@@ -2,9 +2,12 @@ import React, { useContext, useEffect, useState } from "react";
 import { auth } from "../../firebase/config";
 import { 
     createUserWithEmailAndPassword,
-    onAuthStateChanged
+    onAuthStateChanged,
+    sendPasswordResetEmail,
+    signInWithEmailAndPassword,
+    signOut
 } from "firebase/auth";
-import { addDoc, collection, updateDoc } from "firebase/firestore";
+import { addDoc, collection, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { projectStorage, projectFirestore as db } from "../../firebase/config";
 
@@ -21,7 +24,6 @@ export function AuthProvider({children}) {
     const [loading, setLoading] = useState()
 
     function signup(photo, username, email, password, isBusiness) {
-        // store photo
         const storageRef = ref(projectStorage, photo.name)
         uploadBytes(storageRef, photo).then(async (snapshot) => {
             const collectionRef = collection(db, 'users')
@@ -35,6 +37,25 @@ export function AuthProvider({children}) {
         })
     }
 
+    async function login(username, password) {
+        let email = ''
+        const q = query(collection(db, 'users'), where('username', '==', username))
+        const querySnapshots = await getDocs(q)
+        querySnapshots.forEach((snapshot) => {
+            let doc = snapshot._document.data.value.mapValue.fields
+            email = doc.email.stringValue
+        })
+        return signInWithEmailAndPassword(auth, email, password)
+    }
+
+    function logout() {
+        return signOut(auth)
+    }
+
+    function resetPassword(email) {
+        return sendPasswordResetEmail(auth, email)
+    }
+
     useEffect(() => {
         const unsuscribe = onAuthStateChanged(auth, user => {
             setCurrentUser(user)
@@ -46,6 +67,9 @@ export function AuthProvider({children}) {
     const value = {
         currentUser,
         signup,
+        login,
+        logout,
+        resetPassword,
     }
 
     return (
