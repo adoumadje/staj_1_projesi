@@ -2,11 +2,17 @@ import React, { useState } from 'react'
 import { Container, Button, Alert } from 'react-bootstrap'
 import Navbar from './Navbar/Navbar'
 import * as XLSX from 'xlsx'
+import { addDoc, collection, getDocs, query, updateDoc, where } from 'firebase/firestore'
+import { projectFirestore as db } from '../firebase/config'
+import { useAuth } from './contexts/AuthContext'
 
 const BusinessDashboard = () => {
     const [items, setItems] = useState([])
     const [tableHeaders, setTableHeaders] = useState([])
+    const [unpushable, setUnpushable] = useState(true)
     const [error, setError] = useState()
+    const [success, setSucess] = useState(false)
+    const { currentUser } = useAuth()
 
     function onUploadFile(e) {
         let file = e.target.files[0]
@@ -18,6 +24,7 @@ const BusinessDashboard = () => {
         }
 
         setError('')
+        setSucess(false)
         readExcel(file)
     }
 
@@ -41,15 +48,43 @@ const BusinessDashboard = () => {
         })
 
         promise.then((data) => {
-            createTable(data)
+            setItems(data)
+            setTableHeaders(Object.keys(items[0]))
+            setUnpushable(false)
         }).catch((err) => {
             setError(err.message)
         })
     }
 
-    function createTable(data) {
-        setItems(data)
-        setTableHeaders(Object.keys(items[0]))
+    async function pushData() {
+        const collectionRef = collection(db, 'products')
+        setUnpushable(true)
+        for(const item of items) {
+            let docRef = await addDoc(collectionRef, item)
+            let storeId = await getStoreId(currentUser)
+            let productSearch = getProductSearch(item.productName)
+            await updateDoc(docRef, {productId: docRef.id, storeId, productSearch})
+        }
+        setSucess(true)
+    }
+
+    function getProductSearch(productName) {
+        let productSearch = []
+        for(let i = 0; i < productName.length; ++i) {
+            productSearch.push(productName.substring(0,i))
+        }
+        return productSearch
+    }
+
+    async function getStoreId(currentStore) {
+        let storeId = ''
+        const q = query(collection(db, 'users'), where('email', '==', currentStore.email))
+        const querySnapshots = await getDocs(q)
+        querySnapshots.forEach(snapshot => {
+            let doc = snapshot._document.data.value.mapValue.fields
+            storeId = doc.Id.stringValue
+        })
+        return storeId
     }
 
   return (
@@ -60,7 +95,7 @@ const BusinessDashboard = () => {
             {error && <Alert className='mt-2 mb-2' variant='danger'>{error}</Alert>}
             <input type="file" className='form-control' id="uploadFileInput" onChange={onUploadFile} />
         </div>
-        <div className="data mt-5 w-75 mx-auto">
+        <div className="data mt-5 w-100 mx-auto">
             {items.length && <table className="table table-striped">
                 <thead>
                     <tr>
@@ -80,8 +115,9 @@ const BusinessDashboard = () => {
                 </tbody>
             </table>}
         </div>
-        <div className="w-25 mx-auto mb-5" style={{marginTop: '100px'}}>
-            <Button className='w-100' color='#fff'>Push Data</Button>
+        {success && <Alert className='mt-5 mx-auto w-75 text-center' variant='success'>Data pushed successfully</Alert>}
+        <div className="w-25 mx-auto mb-5" style={{marginTop: '20px'}}>
+            <Button disabled={unpushable} onClick={pushData} className='w-100' color='#fff'>Push Data</Button>
         </div>
     </Container>
   )
