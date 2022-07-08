@@ -1,15 +1,39 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Container, Button } from 'react-bootstrap'
 import Navbar from '../Navbar/Navbar'
 import styles from './UserDashboard.module.css'
+import SearchBar from './SearchBar/SearchBar'
+import { collection, getDocs, query } from 'firebase/firestore'
+import { projectFirestore as db } from '../../firebase/config'
 
 const UserDashboard = () => {
+    const [productNames, setProductNames] = useState([])
+
+    async function getProductNames() {
+        let prodNames = []
+        const q = query(collection(db, 'products'))
+        const querySnapshots = await getDocs(q)
+        querySnapshots.forEach(snapshot => {
+            let doc = snapshot._document.data.value.mapValue.fields
+            prodNames.push(doc.productName.stringValue)
+        })
+        prodNames = [...new Set(prodNames)]
+        return prodNames
+    }
+
+    useEffect(() => {
+        const setData = async () => {
+            let prodNames = await getProductNames()
+            setProductNames(prodNames)
+        }
+        setData()
+    }, [])
+
   return (
     <Container style={{paddingTop: '150px'}}>
         <Navbar />
         <div className="mb-4 mx-auto" style={{width: '40%'}}>
-            <label htmlFor="prodNameInp" className='form-label'>Product Name</label>
-            <input type="text" className='form-control' id='prodNameInp' />
+            <SearchBar data={productNames} />
         </div>
         <h3 className='text-center' 
             style={{

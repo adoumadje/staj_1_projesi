@@ -62,18 +62,9 @@ const BusinessDashboard = () => {
         for(const item of items) {
             let docRef = await addDoc(collectionRef, item)
             let storeId = await getStoreId(currentUser)
-            let productSearch = getProductSearch(item.productName)
-            await updateDoc(docRef, {productId: docRef.id, storeId, productSearch})
+            await updateDoc(docRef, {productId: docRef.id, storeId})
         }
         setSucess(true)
-    }
-
-    function getProductSearch(productName) {
-        let productSearch = []
-        for(let i = 0; i < productName.length; ++i) {
-            productSearch.push(productName.substring(0,i))
-        }
-        return productSearch
     }
 
     async function getStoreId(currentStore) {
@@ -96,7 +87,7 @@ const BusinessDashboard = () => {
             <input type="file" className='form-control' id="uploadFileInput" onChange={onUploadFile} />
         </div>
         <div className="data mt-5 w-100 mx-auto">
-            {items.length && <table className="table table-striped">
+            {items.length !== 0 && (<table className="table table-striped">
                 <thead>
                     <tr>
                         {tableHeaders.map((header, index) => (
@@ -113,7 +104,7 @@ const BusinessDashboard = () => {
                         </tr>
                     ))}
                 </tbody>
-            </table>}
+            </table>)}
         </div>
         {success && <Alert className='mt-5 mx-auto w-75 text-center' variant='success'>Data pushed successfully</Alert>}
         <div className="w-25 mx-auto mb-5" style={{marginTop: '20px'}}>
