@@ -6,7 +6,7 @@ import { projectFirestore as db } from '../../firebase/config'
 import { useNavigate } from 'react-router-dom'
 
 const Navbar = () => {
-    const [profilePic, setProfilePic] = useState('https://png.pngtree.com/png-clipart/20190611/original/pngtree-business-profile-png-image_2610535.jpg')
+    const [profilePic, setProfilePic] = useState('https://www.10doigts.fr/assets/products/cartes-300-grm2-blanc-10-feuilles-a4-12251.jpg')
 
     const [showMenu, setShowMenu] = useState(false)
     const { currentUser, logout } = useAuth()
