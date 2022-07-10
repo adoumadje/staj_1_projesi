@@ -1,5 +1,6 @@
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
 import React, { useState } from 'react'
+import { useEffect } from 'react'
 import { Container } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { projectFirestore as db } from '../../firebase/config'
@@ -15,23 +16,38 @@ const SearchResults = () => {
     async function fetchProducts() {
         let searchList = []
         const q = query(collection(db, 'products'), where('productName', '==', searchedProduct))
-        const querySnapshots = await getDocs(q)
-        querySnapshots.forEach(snapshot => {
-            let doc = snapshot._document.data.value.mapValue.fields
+        let querySnapshots = await getDocs(q)
+        querySnapshots = querySnapshots._snapshot.docChanges
+        for(const snapshot of querySnapshots){
+            let doc = snapshot.doc.data.value.mapValue.fields
+            let storeLogo = await getStoreLogo(doc.storeId.stringValue)
             searchList.push({
+                id: doc.productId.stringValue,
                 image: doc.productImage.stringValue,
                 name: doc.productName.stringValue,
                 description: doc.productDescription.stringValue,
-                price: doc.productPrice.numberValue,
-                storeLogo: getStoreLogo(doc.storeId.stringValue)
+                price: doc.productPrice.doubleValue,
+                storeLogo,
             })
-        })
+        }
         setProducts(searchList)
     }
 
-    function getStoreLogo(storeId) {
-        
+    async function getStoreLogo(storeId) {
+        let storeLogo = 'logo'
+        const docRef = doc(db, 'users', storeId)
+        const snapshot = await getDoc(docRef)
+        const uDoc = snapshot._document.data.value.mapValue.fields
+        storeLogo = uDoc.profilURL.stringValue
+        return storeLogo
     }
+
+    useEffect(() => {
+        const fetchProds = async () => {
+            await fetchProducts()
+        }
+        fetchProds()
+    }, [products])
 
   return (
     <Container className='w-50' style={{paddingTop: '150px'}}>
@@ -50,13 +66,14 @@ const SearchResults = () => {
             ></i>
             <h2>Search Results for "{searchedProduct}"</h2>
         </div>
-        <div className="results">
-            <SearchResult />
-            <SearchResult />
-            <SearchResult />
-            <SearchResult />
-            <SearchResult />
-        </div>
+        {products.length === 0 
+        ? (<div className='no-result'>
+                <p style={{fontSize: '18px'}}>No Result...</p>
+            </div>
+            ) : (
+            <div className="results">
+                {products.map(product => (<SearchResult key={product.id} product={product} />))}
+            </div>)}
     </Container>
   )
 }

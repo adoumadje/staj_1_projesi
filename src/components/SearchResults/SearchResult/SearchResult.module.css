@@ -12,7 +12,7 @@
 }
 
 .productImg img {
-    min-height: 75px;
+    max-height: 75px;
 }
 
 .productInfo {
@@ -37,7 +37,7 @@
 }
 
 .storeLogo img {
-    min-width: 110px;
+    max-width: 110px;
 }
 
 .productPrice {
