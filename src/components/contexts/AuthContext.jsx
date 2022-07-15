@@ -23,12 +23,17 @@ export function AuthProvider({children}) {
     const [currentUser, setCurrentUser] = useState()
     const [loading, setLoading] = useState()
 
-    function signup(photo, username, email, password, isBusiness) {
+    async function signup(photo, username, email, password, isBusiness, storePosition) {
         const storageRef = ref(projectStorage, photo.name)
         uploadBytes(storageRef, photo).then(async (snapshot) => {
             const collectionRef = collection(db, 'users')
             const profilURL = await getDownloadURL(storageRef)
-            const docRef = await addDoc(collectionRef, { profilURL, username, email, isBusiness })
+            let docRef = null
+            if(isBusiness) {
+                docRef = await addDoc(collectionRef, { profilURL, username, email, isBusiness, storePosition })
+            } else {
+                docRef = await addDoc(collectionRef, { profilURL, username, email, isBusiness })
+            }
             await updateDoc(docRef, { Id: docRef.id })
             return createUserWithEmailAndPassword(auth, email, password)
         }).catch(err => {

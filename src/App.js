@@ -11,6 +11,8 @@ import { RequireAuth } from "./components/contexts/RequireAuth";
 import SearchProvider from "./components/contexts/SearchContext";
 
 function App() {
+  // navigator.geolocation.getCurrentPosition(position => {})
+
   return (
     <>
       <BrowserRouter>

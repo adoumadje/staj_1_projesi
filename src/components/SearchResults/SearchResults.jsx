@@ -21,6 +21,7 @@ const SearchResults = () => {
         for(const snapshot of querySnapshots){
             let doc = snapshot.doc.data.value.mapValue.fields
             let storeLogo = await getStoreLogo(doc.storeId.stringValue)
+            let storeDistance = await getStoreDistance(doc.storeId.stringValue)
             searchList.push({
                 id: doc.productId.stringValue,
                 image: doc.productImage.stringValue,
@@ -40,6 +41,16 @@ const SearchResults = () => {
         const uDoc = snapshot._document.data.value.mapValue.fields
         storeLogo = uDoc.profilURL.stringValue
         return storeLogo
+    }
+
+    async function getStoreDistance(storeId) {
+        let storeDistance = 237
+        const docRef = doc(db, 'users', storeId)
+        const snapshot = await getDoc(docRef)
+        const uDoc = snapshot._document.data.value.mapValue.fields
+        const storePosition = uDoc.storePosition.mapValue
+        console.log(storePosition)
+        return storeDistance
     }
 
     useEffect(() => {

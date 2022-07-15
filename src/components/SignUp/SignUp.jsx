@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { projectFirestore as db } from '../../firebase/config'
+import { useEffect } from 'react'
 
 
 
@@ -16,6 +17,8 @@ const SignUp = () => {
     const passwordRef = useRef()
     const passwordConfirmRef = useRef()
     const [isBusiness, setIsBusiness] = useState(false)
+    const [storePosition, setStorePosition] = useState(null)
+    const [isFirstRendering, setIsFirstRendering] = useState(true)
 
     const { signup } = useAuth()
     const [error, setError] = useState()
@@ -24,7 +27,16 @@ const SignUp = () => {
 
     const [photoSrc, setPhotoSrc] = useState('https://png.pngtree.com/png-clipart/20190611/original/pngtree-business-profile-png-image_2610535.jpg')
     const navigate = useNavigate()
+
     
+    useEffect(() => {
+        if(isFirstRendering) {
+            setIsFirstRendering(false)
+            return
+        }
+        console.log(isBusiness)
+        console.log(storePosition)
+    }, [storePosition])
 
     const uploadPhoto = () => {
         const choosedFile = photoInputRef.current.files[0]
@@ -48,6 +60,20 @@ const SignUp = () => {
         return isTaken
     }
 
+    function handleBusinessCheck(e) {
+        setIsBusiness(e.target.checked)
+        if(!isBusiness){
+            navigator.geolocation.getCurrentPosition((position) => {
+                setStorePosition({
+                    lat: position.coords.latitude,
+                    long: position.coords.longitude,
+                })
+            })
+        } else {
+            setStorePosition(null)
+        }
+    }
+
     async function handleSubmit(e) {
         e.preventDefault()
 
@@ -60,6 +86,10 @@ const SignUp = () => {
             return setError('This username is taken')
         }
 
+        if(isBusiness && storePosition === null) {
+            return setError('Business location access denied')
+        }
+
         try {
             setLoading(true)
             await signup(
@@ -67,7 +97,8 @@ const SignUp = () => {
                 userNameRef.current.value,
                 emailRef.current.value,
                 passwordRef.current.value,
-                isBusiness
+                isBusiness,
+                storePosition,
             )
             setError('')
             setSucess('Account Successfully created')
@@ -126,7 +157,7 @@ const SignUp = () => {
                                     type='checkbox' 
                                     label='I am a business'
                                     className='mt-3'
-                                    onChange={(e) => setIsBusiness(e.target.checked) }
+                                    onChange={handleBusinessCheck}
                                 />
                             </Form.Group>
                             <Form.Group>
