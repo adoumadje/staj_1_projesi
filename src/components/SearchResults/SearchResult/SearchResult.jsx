@@ -29,7 +29,7 @@ const SearchResult = ({product}) => {
         <Button style={{fontSize: '8px', fontWeight: '600'}}>Go to Store</Button>
       </div>
       <div className={styles.storeDistance}>
-        <h4>Distance:<br/><span>10km</span></h4>
+        <h4>Distance:<br/><span>{product.storeDistance} km</span></h4>
       </div>
     </div>
   )

@@ -1,6 +1,5 @@
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
-import React, { useState } from 'react'
-import { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Container } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { projectFirestore as db } from '../../firebase/config'
@@ -10,8 +9,18 @@ import SearchResult from './SearchResult/SearchResult'
 
 const SearchResults = () => {
     const [products, setProducts] = useState([])
+    const [userPosition, setUserPosition] = useState({})
     const navigate = useNavigate()
     const { searchedProduct } = useSearch()
+
+    useEffect(() => {
+        navigator.geolocation.getCurrentPosition((position) => {
+            setUserPosition({
+                lat: position.coords.latitude,
+                long: position.coords.longitude,
+            })
+        })
+    }, [userPosition])
 
     async function fetchProducts() {
         let searchList = []
@@ -29,6 +38,7 @@ const SearchResults = () => {
                 description: doc.productDescription.stringValue,
                 price: doc.productPrice.doubleValue,
                 storeLogo,
+                storeDistance,
             })
         }
         setProducts(searchList)
@@ -44,13 +54,23 @@ const SearchResults = () => {
     }
 
     async function getStoreDistance(storeId) {
-        let storeDistance = 237
         const docRef = doc(db, 'users', storeId)
         const snapshot = await getDoc(docRef)
         const uDoc = snapshot._document.data.value.mapValue.fields
-        const storePosition = uDoc.storePosition.mapValue
-        console.log(storePosition)
+        const storePositionMap = uDoc.storePosition.mapValue.fields 
+        const storePosition = {
+            lat: storePositionMap.lat.doubleValue,
+            long: storePositionMap.long.doubleValue,
+        }
+        const storeDistance = calculateDistance(userPosition, storePosition)
         return storeDistance
+    }
+
+    function calculateDistance(pos1, pos2) {
+        const sqrLatDiff = Math.pow(pos1.lat - pos2.lat, 2)
+        const sqrLongDiff = Math.pow(pos1.long - pos2.long, 2)
+        const distance = Math.sqrt(sqrLatDiff + sqrLongDiff)
+        return distance.toFixed(1)
     }
 
     useEffect(() => {

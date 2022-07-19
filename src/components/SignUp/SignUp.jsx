@@ -34,8 +34,6 @@ const SignUp = () => {
             setIsFirstRendering(false)
             return
         }
-        console.log(isBusiness)
-        console.log(storePosition)
     }, [storePosition])
 
     const uploadPhoto = () => {
