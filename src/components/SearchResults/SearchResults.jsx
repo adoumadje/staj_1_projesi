@@ -67,10 +67,27 @@ const SearchResults = () => {
     }
 
     function calculateDistance(pos1, pos2) {
-        const sqrLatDiff = Math.pow(pos1.lat - pos2.lat, 2)
-        const sqrLongDiff = Math.pow(pos1.long - pos2.long, 2)
-        const distance = Math.sqrt(sqrLatDiff + sqrLongDiff)
-        return distance.toFixed(1)
+        // convert to radian
+        let lat1 = pos1.lat * Math.PI / 180
+        let lat2 = pos2.lat * Math.PI / 180
+        let long1 = pos1.long * Math.PI / 180
+        let long2 = pos2.long * Math.PI / 180
+
+        // Haversine formula
+        let dlong = long1 - long2
+        let dlat = lat1 - lat2
+
+        let a = Math.pow(Math.sin(dlat/2), 2)
+                    + Math.cos(lat1) * Math.cos(lat2)
+                    * Math.pow(Math.sin(dlong / 2), 2)
+
+        let c = 2 * Math.asin(Math.sqrt(a))
+
+
+        // earth radius in km
+        let r = 6371
+
+        return (c * r)
     }
 
     useEffect(() => {
