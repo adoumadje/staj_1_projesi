@@ -87,7 +87,9 @@ const SearchResults = () => {
         // earth radius in km
         let r = 6371
 
-        return (c * r)
+        let distance = c * r
+
+        return distance.toFixed(2)
     }
 
     useEffect(() => {
