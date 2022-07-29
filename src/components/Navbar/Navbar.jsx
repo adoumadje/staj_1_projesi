@@ -79,11 +79,11 @@ const Navbar = () => {
                     <ul>
                         <li>
                             <img src="https://cdn-icons-png.flaticon.com/512/618/618631.png" alt="" />
-                            <h6>My Profile</h6>
+                            <h6 onClick={() => { navigate('/user-infos') }}>My Profile</h6>
                         </li>
                         <li>
                             <img src="https://cdn-icons-png.flaticon.com/512/1159/1159633.png" alt="" />
-                            <h6>Edit Profile</h6>
+                            <h6 onClick={() => { navigate('/update-profile') }}>Edit Profile</h6>
                         </li>
                         <li>
                             <img src="https://cdn-icons-png.flaticon.com/512/1250/1250678.png" alt="" />

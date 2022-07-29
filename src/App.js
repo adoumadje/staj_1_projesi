@@ -9,6 +9,8 @@ import SearchResults from "./components/SearchResults/SearchResults";
 import { AuthProvider } from "./components/contexts/AuthContext"
 import { RequireAuth } from "./components/contexts/RequireAuth";
 import SearchProvider from "./components/contexts/SearchContext";
+import UserInfos from "./components/UserInfos";
+import UpdateProfile from "./components/UpdateProfile/UpdateProfile";
 
 function App() {
   // navigator.geolocation.getCurrentPosition(position => {})
@@ -43,6 +45,12 @@ function App() {
                     <SearchResults />
                   </RequireAuth>
                 } 
+              />
+              <Route path="/user-infos"
+                element={<UserInfos />}
+              />
+              <Route path="/update-profile"
+                element={<UpdateProfile />}
               />
             </Routes>
           </SearchProvider>

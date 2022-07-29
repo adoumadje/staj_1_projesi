@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Card, Form, Button, Container, Alert } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import styles from './SignUp.module.css'
@@ -6,7 +6,6 @@ import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { projectFirestore as db } from '../../firebase/config'
-import { useEffect } from 'react'
 
 
 
