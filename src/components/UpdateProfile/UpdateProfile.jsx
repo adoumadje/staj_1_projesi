@@ -17,11 +17,10 @@ function UpdateProfile() {
     const [user, setUser] = useState({})
 
     const [changeLocation, setChangeLocation] = useState(false)
-    const [isaBusiness, setIsaBusiness] = useState(false)
     const [storePosition, setStorePosition] = useState(null)
     const [isFirstRendering, setIsFirstRendering] = useState(true)
 
-    const { currentUser, signup } = useAuth()
+    const { currentUser, updateProfile } = useAuth()
     const [error, setError] = useState()
     const [success, setSucess] = useState()
     const [loading, setLoading] = useState()
@@ -51,6 +50,17 @@ function UpdateProfile() {
         return username
     }
 
+    async function getUserId(currentUser) {
+        let userId = ''
+        const q = query(collection(db, 'users'), where('email', '==', currentUser.email))
+        const querySnapshots = await getDocs(q)
+        querySnapshots.forEach((snapshot) => {
+            let doc = snapshot._document.data.value.mapValue.fields
+            userId = doc.Id.stringValue
+        })
+        return userId
+    }
+
     async function isBusiness(currentUser) {
         let isBusy = false
         const q = query(collection(db, 'users'), where('email', '==', currentUser.email))
@@ -65,10 +75,11 @@ function UpdateProfile() {
     useEffect(() => {
         const updateInfos = async () => {
             setUser({
+                Id: await getUserId(currentUser),
                 profilePic: await getPhotoURL(currentUser),
                 username: await getUserName(currentUser),
                 email: currentUser.email,
-                hasBusinessStatus: await isBusiness(currentUser),
+                isBusiness: await isBusiness(currentUser),
             })
             setPhotoSrc(user.profilePic)
         }
@@ -135,16 +146,24 @@ function UpdateProfile() {
 
         try {
             setLoading(true)
-            await signup(
+            const oldPhotoPath = user.profilePic.substring(
+                user.profilePic.lastIndexOf('/') + 1,
+                user.profilePic.indexOf('?')
+            )
+            const oldEmail = user.email
+            await updateProfile(
+                user.Id,
+                oldPhotoPath,
                 photoInputRef.current.files[0],
                 userNameRef.current.value,
+                oldEmail,
                 emailRef.current.value,
                 passwordRef.current.value,
                 changeLocation,
                 storePosition,
             )
             setError('')
-            setSucess('Account Successfully created')
+            setSucess('Account Successfully Updated')
             setTimeout(() => {
                 navigate('/login')
             }, 3000)
@@ -177,21 +196,21 @@ function UpdateProfile() {
                         </Form.Group>
                         <Form.Group className='mb-2'>
                             <Form.Label>Username</Form.Label>
-                            <Form.Control type='text' ref={userNameRef} defaultValue={user.username} required />
+                            <Form.Control type='text' ref={userNameRef} defaultValue={user.username} />
                         </Form.Group>
                         <Form.Group className='mb-2'>
                             <Form.Label>Email</Form.Label>
-                            <Form.Control type='email' ref={emailRef} defaultValue={user.email} required />
+                            <Form.Control type='email' ref={emailRef} defaultValue={user.email} />
                         </Form.Group>
                         <Form.Group className='mb-2'>
                             <Form.Label>Password</Form.Label>
-                            <Form.Control type='password' placeholder='Leave blank to keep the same' ref={passwordRef} required />
+                            <Form.Control type='password' placeholder='Leave blank to keep the same' ref={passwordRef} />
                         </Form.Group>
                         <Form.Group className='mb-2'>
                             <Form.Label>Confirm Password</Form.Label>
-                            <Form.Control type='password' placeholder='Leave blank to keep the same' ref={passwordConfirmRef} required />
+                            <Form.Control type='password' placeholder='Leave blank to keep the same' ref={passwordConfirmRef} />
                         </Form.Group>
-                        {isaBusiness && (<Form.Group className='mb-2'>
+                        {user.isBusiness && (<Form.Group className='mb-2'>
                             <Form.Check 
                                 type='checkbox' 
                                 label='Change Location'

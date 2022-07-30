@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx'
 import { addDoc, collection, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { projectFirestore as db } from '../firebase/config'
 import { useAuth } from './contexts/AuthContext'
+import { useEffect } from 'react'
 
 const BusinessDashboard = () => {
     const [items, setItems] = useState([])
@@ -14,11 +15,17 @@ const BusinessDashboard = () => {
     const [success, setSucess] = useState(false)
     const { currentUser } = useAuth()
 
+    useEffect(() => {
+
+    }, [])
+
     function onUploadFile(e) {
         let file = e.target.files[0]
+        console.log(file)
         const xlxsDocType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        const csvDocType = 'application/vnd.ms-excel'
         
-        if(file.type !== xlxsDocType) {
+        if(file.type !== xlxsDocType && file.type !== csvDocType) {
             setError('wrong document type. Please upload an excel file')
             return
         }
@@ -42,14 +49,15 @@ const BusinessDashboard = () => {
                 resolve(data)
             } 
 
-            file.onerror = (err) => {
+            fileReader.onerror = (err) => {
+                console.log(err);
                 reject(err)
             }
         })
 
         promise.then((data) => {
             setItems(data)
-            setTableHeaders(Object.keys(items[0]))
+            setTableHeaders(Object.keys(data[0]))
             setUnpushable(false)
         }).catch((err) => {
             setError(err.message)

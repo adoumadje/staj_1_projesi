@@ -5,10 +5,12 @@ import {
     onAuthStateChanged,
     sendPasswordResetEmail,
     signInWithEmailAndPassword,
-    signOut
+    signOut,
+    updateEmail,
+    updatePassword,
 } from "firebase/auth";
-import { addDoc, collection, getDocs, query, updateDoc, where } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import { addDoc, collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"
 import { projectStorage, projectFirestore as db } from "../../firebase/config";
 
 const AuthContext = React.createContext()
@@ -61,6 +63,41 @@ export function AuthProvider({children}) {
         return sendPasswordResetEmail(auth, email)
     }
 
+    async function updateProfile(userId, 
+        oldPhotoPath, photo, 
+        username, 
+        oldEmail, email, 
+        password, 
+        changeLocation, storePosition) {
+        const docRef = doc(db, 'users', userId)
+        const oldStorageRef = ref(projectStorage, oldPhotoPath)
+        const storageRef = ref(projectStorage, photo.name)
+        deleteObject(oldStorageRef).then(() => {})
+        uploadBytes(storageRef, photo).then(async (snapshot) => {
+            const profilURL = await getDownloadURL(storageRef)
+            if(changeLocation) {
+                await updateDoc(docRef, { profilURL, username, email, storePosition })
+            } else {
+                await updateDoc(docRef, { profilURL, username, email })
+            }
+            
+            const promises = []
+
+            if(email !== oldEmail) {
+                promises.push(updateEmail(auth, email))
+            }
+
+            if(password !== '') {
+                promises.push(updatePassword(auth, password))
+            }
+
+            return Promise.all(promises).then(() => {})
+        }).catch(err => {
+            console.log(err.message);
+            return
+        })
+    }
+
     useEffect(() => {
         const unsuscribe = onAuthStateChanged(auth, user => {
             setCurrentUser(user)
@@ -75,6 +112,7 @@ export function AuthProvider({children}) {
         login,
         logout,
         resetPassword,
+        updateProfile,
     }
 
     return (
